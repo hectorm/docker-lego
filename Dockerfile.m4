@@ -72,7 +72,7 @@ RUN groupadd \
 RUN useradd \
 		--uid "${LEGO_USER_UID}" \
 		--gid "${LEGO_USER_GID}" \
-		--shell="$(which bash)" \
+		--shell "$(which bash)" \
 		--home-dir /home/lego/ \
 		--create-home \
 		lego
