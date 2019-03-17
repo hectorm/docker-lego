@@ -18,6 +18,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 FROM golang:1-stretch AS build-lego
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=qemu-user-static CROSS_QEMU CROSS_QEMU]])
 
+# Install system packages
+RUN export DEBIAN_FRONTEND=noninteractive \
+	&& apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		file
+
 # Build Dep
 RUN go get -v -d github.com/golang/dep \
 	&& cd "${GOPATH}/src/github.com/golang/dep" \
@@ -43,7 +49,7 @@ RUN cd "${GOPATH}/src/github.com/xenolf/lego" \
 	&& export LDFLAGS="-X main.version=${LEGO_TREEISH}" \
 	&& go build -o ./dist/lego -ldflags "${LDFLAGS}" ./cmd/lego/main.go \
 	&& mv ./dist/lego /usr/bin/lego \
-	&& /usr/bin/lego --version
+	&& file /usr/bin/lego && /usr/bin/lego --version
 
 ##################################################
 ## "lego" stage
