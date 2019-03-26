@@ -36,12 +36,12 @@ RUN cd "${GOPATH}/src/github.com/golang/dep" \
 COPY patches/ /tmp/patches/
 
 # Build lego
-ARG LEGO_TREEISH=v2.3.0
-RUN go get -v -d github.com/xenolf/lego/cmd/lego \
-	&& cd "${GOPATH}/src/github.com/xenolf/lego" \
+ARG LEGO_TREEISH=v2.4.0
+RUN go get -v -d github.com/go-acme/lego/cmd/lego \
+	&& cd "${GOPATH}/src/github.com/go-acme/lego" \
 	&& git checkout "${LEGO_TREEISH}" \
 	&& dep ensure
-RUN cd "${GOPATH}/src/github.com/xenolf/lego" \
+RUN cd "${GOPATH}/src/github.com/go-acme/lego" \
 	&& for f in /tmp/patches/lego-*.patch; do [ -e "$f" ] || continue; git apply -v "$f"; done \
 	&& export GOOS=m4_ifdef([[CROSS_GOOS]], [[CROSS_GOOS]]) \
 	&& export GOARCH=m4_ifdef([[CROSS_GOARCH]], [[CROSS_GOARCH]]) \
