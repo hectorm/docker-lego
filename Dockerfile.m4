@@ -38,7 +38,7 @@ RUN cd "${GOPATH}/src/github.com/golang/dep" \
 COPY patches/ /tmp/patches/
 
 # Build lego
-ARG LEGO_TREEISH=v2.4.0
+ARG LEGO_TREEISH=v2.5.0
 RUN go get -v -d github.com/go-acme/lego/cmd/lego \
 	&& cd "${GOPATH}/src/github.com/go-acme/lego" \
 	&& git checkout "${LEGO_TREEISH}" \
