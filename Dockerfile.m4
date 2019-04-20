@@ -18,6 +18,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 FROM golang:1-stretch AS build-lego
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=qemu-user-static CROSS_QEMU CROSS_QEMU]])
 
+# Environment
+ENV CGO_ENABLED=0
+
 # Install system packages
 RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get update \
@@ -48,10 +51,11 @@ RUN cd "${GOPATH}/src/github.com/go-acme/lego" \
 	&& export GOOS=m4_ifdef([[CROSS_GOOS]], [[CROSS_GOOS]]) \
 	&& export GOARCH=m4_ifdef([[CROSS_GOARCH]], [[CROSS_GOARCH]]) \
 	&& export GOARM=m4_ifdef([[CROSS_GOARM]], [[CROSS_GOARM]]) \
-	&& export LDFLAGS="-X main.version=${LEGO_TREEISH}" \
+	&& export LDFLAGS="-s -w -X main.version=${LEGO_TREEISH}" \
 	&& go build -o ./dist/lego -ldflags "${LDFLAGS}" ./cmd/lego/main.go \
 	&& mv ./dist/lego /usr/bin/lego \
-	&& file /usr/bin/lego && /usr/bin/lego --version
+	&& file /usr/bin/lego \
+	&& /usr/bin/lego --version
 
 ##################################################
 ## "lego" stage
@@ -89,7 +93,8 @@ RUN useradd \
 # Copy lego build
 COPY --from=build-lego --chown=root:root /usr/bin/lego /usr/bin/lego
 
-# Add capabilities to the lego binary
+# Add capabilities to the lego binary (this allows lego to bind to privileged ports
+# without being root, but creates another layer that increases the image size)
 RUN setcap cap_net_bind_service=+ep /usr/bin/lego
 
 # Create $LEGOPATH directory (lego will use this directory to store data)
