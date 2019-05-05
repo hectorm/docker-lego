@@ -1,22 +1,11 @@
 m4_changequote([[, ]])
 
-m4_ifdef([[CROSS_QEMU]], [[
-##################################################
-## "qemu-user-static" stage
-##################################################
-
-FROM ubuntu:18.04 AS qemu-user-static
-RUN export DEBIAN_FRONTEND=noninteractive \
-	&& apt-get update \
-	&& apt-get install -y --no-install-recommends qemu-user-static
-]])
-
 ##################################################
 ## "build-lego" stage
 ##################################################
 
 FROM golang:1-stretch AS build-lego
-m4_ifdef([[CROSS_QEMU]], [[COPY --from=qemu-user-static CROSS_QEMU CROSS_QEMU]])
+m4_ifdef([[CROSS_QEMU]], [[COPY --from=hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Environment
 ENV CGO_ENABLED=0
@@ -62,7 +51,7 @@ RUN cd "${GOPATH}/src/github.com/go-acme/lego" \
 ##################################################
 
 m4_ifdef([[CROSS_ARCH]], [[FROM CROSS_ARCH/ubuntu:18.04]], [[FROM ubuntu:18.04]]) AS lego
-m4_ifdef([[CROSS_QEMU]], [[COPY --from=qemu-user-static CROSS_QEMU CROSS_QEMU]])
+m4_ifdef([[CROSS_QEMU]], [[COPY --from=hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Environment
 ENV LEGOPATH=/var/lib/lego
