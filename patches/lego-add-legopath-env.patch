@@ -1,10 +1,10 @@
 diff --git a/cmd/lego/main.go b/cmd/lego/main.go
-index f00119e..346b568 100644
+index 30ac914..042e90d 100644
 --- a/cmd/lego/main.go
 +++ b/cmd/lego/main.go
 @@ -12,2 +12,3 @@ import (
- 	"github.com/go-acme/lego/log"
-+	"github.com/go-acme/lego/platform/config/env"
+ 	"github.com/go-acme/lego/v3/log"
++	"github.com/go-acme/lego/v3/platform/config/env"
  	"github.com/urfave/cli"
 @@ -36,3 +37,4 @@ func main() {
  	}

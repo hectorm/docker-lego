@@ -8,7 +8,11 @@ FROM docker.io/golang:1-stretch AS build-lego
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Environment
+ENV GO111MODULE=on
 ENV CGO_ENABLED=0
+ENV GOOS=m4_ifdef([[CROSS_GOOS]], [[CROSS_GOOS]])
+ENV GOARCH=m4_ifdef([[CROSS_GOARCH]], [[CROSS_GOARCH]])
+ENV GOARM=m4_ifdef([[CROSS_GOARM]], [[CROSS_GOARM]])
 
 # Install system packages
 RUN export DEBIAN_FRONTEND=noninteractive \
@@ -18,33 +22,21 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		tzdata \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Build Dep
-RUN go get -v -d github.com/golang/dep \
-	&& cd "${GOPATH}/src/github.com/golang/dep" \
-	&& git checkout "$(git describe --abbrev=0 --tags)"
-RUN cd "${GOPATH}/src/github.com/golang/dep" \
-	&& go build -o ./cmd/dep/dep ./cmd/dep/ \
-	&& mv ./cmd/dep/dep /usr/bin/dep
-
 # Copy patches
 COPY patches/ /tmp/patches/
 
 # Build lego
-ARG LEGO_TREEISH=v2.7.2
-RUN go get -v -d github.com/go-acme/lego/cmd/lego \
-	&& cd "${GOPATH}/src/github.com/go-acme/lego" \
-	&& git checkout "${LEGO_TREEISH}" \
-	&& dep ensure
-RUN cd "${GOPATH}/src/github.com/go-acme/lego" \
-	&& for f in /tmp/patches/lego-*.patch; do [ -e "$f" ] || continue; git apply -v "$f"; done \
-	&& export GOOS=m4_ifdef([[CROSS_GOOS]], [[CROSS_GOOS]]) \
-	&& export GOARCH=m4_ifdef([[CROSS_GOARCH]], [[CROSS_GOARCH]]) \
-	&& export GOARM=m4_ifdef([[CROSS_GOARM]], [[CROSS_GOARM]]) \
-	&& export LDFLAGS="-s -w -X main.version=${LEGO_TREEISH}" \
-	&& go build -o ./dist/lego -ldflags "${LDFLAGS}" ./cmd/lego/main.go \
-	&& mv ./dist/lego /usr/bin/lego \
-	&& file /usr/bin/lego \
-	&& /usr/bin/lego --version
+ARG LEGO_TREEISH=v3.0.0
+ARG LEGO_REMOTE=https://github.com/go-acme/lego.git
+WORKDIR /go/src/lego/
+RUN git clone "${LEGO_REMOTE}" ./
+RUN git checkout "${LEGO_TREEISH}"
+RUN git submodule update --init --recursive
+RUN for f in /tmp/patches/lego-*.patch; do [ -e "$f" ] || continue; git apply -v "$f"; done
+RUN go build -o ./dist/lego -ldflags "-s -w -X main.version=${LEGO_TREEISH}" ./cmd/lego/main.go
+RUN mv ./dist/lego /usr/bin/lego
+RUN file /usr/bin/lego
+RUN /usr/bin/lego --version
 
 ##################################################
 ## "lego" stage
