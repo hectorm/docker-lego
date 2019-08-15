@@ -26,7 +26,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 COPY patches/ /tmp/patches/
 
 # Build lego
-ARG LEGO_TREEISH=v3.0.1
+ARG LEGO_TREEISH=v3.0.1-1
 ARG LEGO_REMOTE=https://github.com/go-acme/lego.git
 WORKDIR /go/src/lego/
 RUN git clone "${LEGO_REMOTE}" ./
