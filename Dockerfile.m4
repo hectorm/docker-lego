@@ -29,11 +29,11 @@ COPY patches/ /tmp/patches/
 ARG LEGO_TREEISH=v3.0.2
 ARG LEGO_REMOTE=https://github.com/go-acme/lego.git
 WORKDIR /go/src/lego/
-RUN git clone "${LEGO_REMOTE}" ./
-RUN git checkout "${LEGO_TREEISH}"
+RUN git clone "${LEGO_REMOTE:?}" ./
+RUN git checkout "${LEGO_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN for f in /tmp/patches/lego-*.patch; do [ -e "$f" ] || continue; git apply -v "$f"; done
-RUN go build -o ./dist/lego -ldflags "-s -w -X main.version=${LEGO_TREEISH}" ./cmd/lego/main.go
+RUN go build -o ./dist/lego -ldflags "-s -w -X main.version=${LEGO_TREEISH:?}" ./cmd/lego/main.go
 RUN mv ./dist/lego /usr/bin/lego
 RUN file /usr/bin/lego
 RUN /usr/bin/lego --version
@@ -61,11 +61,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 ARG LEGO_USER_UID=1000
 ARG LEGO_USER_GID=1000
 RUN groupadd \
-		--gid "${LEGO_USER_GID}" \
+		--gid "${LEGO_USER_GID:?}" \
 		lego
 RUN useradd \
-		--uid "${LEGO_USER_UID}" \
-		--gid "${LEGO_USER_GID}" \
+		--uid "${LEGO_USER_UID:?}" \
+		--gid "${LEGO_USER_GID:?}" \
 		--shell "$(command -v bash)" \
 		--home-dir /home/lego/ \
 		--create-home \
@@ -79,7 +79,7 @@ COPY --from=build-lego --chown=root:root /usr/bin/lego /usr/bin/lego
 RUN setcap cap_net_bind_service=+ep /usr/bin/lego
 
 # Create $LEGOPATH directory (lego will use this directory to store data)
-RUN mkdir -p "${LEGOPATH}" && chown lego:lego "${LEGOPATH}" && chmod 700 "${LEGOPATH}"
+RUN mkdir -p "${LEGOPATH:?}" && chown lego:lego "${LEGOPATH:?}" && chmod 700 "${LEGOPATH:?}"
 
 # Drop root privileges
 USER lego:lego
