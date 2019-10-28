@@ -76,6 +76,7 @@ COPY --from=build-lego --chown=root:root /usr/bin/lego /usr/bin/lego
 
 # Add capabilities to the lego binary (this allows lego to bind to privileged ports
 # without being root, but creates another layer that increases the image size)
+m4_ifdef([[CROSS_QEMU]], [[RUN setcap cap_net_bind_service=+ep CROSS_QEMU]])
 RUN setcap cap_net_bind_service=+ep /usr/bin/lego
 
 # Create $LEGOPATH directory (lego will use this directory to store data)
