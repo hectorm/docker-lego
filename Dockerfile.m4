@@ -1,10 +1,10 @@
 m4_changequote([[, ]])
 
 ##################################################
-## "build-lego" stage
+## "build" stage
 ##################################################
 
-FROM docker.io/golang:1-stretch AS build-lego
+FROM docker.io/golang:1-stretch AS build
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Environment
@@ -19,8 +19,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		file \
-		tzdata \
-	&& rm -rf /var/lib/apt/lists/*
+		tzdata
 
 # Copy patches
 COPY patches/ /tmp/patches/
@@ -72,7 +71,7 @@ RUN useradd \
 		lego
 
 # Copy lego build
-COPY --from=build-lego --chown=root:root /usr/bin/lego /usr/bin/lego
+COPY --from=build --chown=root:root /usr/bin/lego /usr/bin/lego
 
 # Add capabilities to the lego binary (this allows lego to bind to privileged ports
 # without being root, but creates another layer that increases the image size)
