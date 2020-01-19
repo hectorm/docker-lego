@@ -45,7 +45,7 @@ m4_ifdef([[CROSS_ARCH]], [[FROM docker.io/CROSS_ARCH/ubuntu:18.04]], [[FROM dock
 m4_ifdef([[CROSS_QEMU]], [[COPY --from=docker.io/hectormolinero/qemu-user-static:latest CROSS_QEMU CROSS_QEMU]])
 
 # Environment
-ENV LEGOPATH=/var/lib/lego
+ENV LEGO_PATH=/var/lib/lego
 
 # Install system packages
 RUN export DEBIAN_FRONTEND=noninteractive \
@@ -78,8 +78,8 @@ COPY --from=build --chown=root:root /usr/bin/lego /usr/bin/lego
 m4_ifdef([[CROSS_QEMU]], [[RUN setcap cap_net_bind_service=+ep CROSS_QEMU]])
 RUN setcap cap_net_bind_service=+ep /usr/bin/lego
 
-# Create $LEGOPATH directory (lego will use this directory to store data)
-RUN mkdir -p "${LEGOPATH:?}" && chown lego:lego "${LEGOPATH:?}" && chmod 700 "${LEGOPATH:?}"
+# Create $LEGO_PATH directory (lego will use this directory to store data)
+RUN mkdir -p "${LEGO_PATH:?}" && chown lego:lego "${LEGO_PATH:?}" && chmod 700 "${LEGO_PATH:?}"
 
 # Drop root privileges
 USER lego:lego
