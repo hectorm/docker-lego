@@ -21,17 +21,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		file \
 		tzdata
 
-# Copy patches
-COPY patches/ /tmp/patches/
-
 # Build lego
-ARG LEGO_TREEISH=v3.3.0
+ARG LEGO_TREEISH=v3.4.0
 ARG LEGO_REMOTE=https://github.com/go-acme/lego.git
 WORKDIR /go/src/lego/
 RUN git clone "${LEGO_REMOTE:?}" ./
 RUN git checkout "${LEGO_TREEISH:?}"
 RUN git submodule update --init --recursive
-RUN for f in /tmp/patches/lego-*.patch; do [ -e "$f" ] || continue; git apply -v "$f"; done
 RUN go build -o ./dist/lego -ldflags "-s -w -X main.version=${LEGO_TREEISH:?}" ./cmd/lego/main.go
 RUN mv ./dist/lego /usr/bin/lego
 RUN file /usr/bin/lego
