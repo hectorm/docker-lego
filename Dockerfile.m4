@@ -22,7 +22,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 		tzdata
 
 # Build lego
-ARG LEGO_TREEISH=v3.4.0
+ARG LEGO_TREEISH=v3.6.0
 ARG LEGO_REMOTE=https://github.com/go-acme/lego.git
 WORKDIR /go/src/lego/
 RUN git clone "${LEGO_REMOTE:?}" ./
