@@ -19,7 +19,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		file \
-		tzdata
+		tzdata \
+	&& rm -rf /var/lib/apt/lists/*
 
 # Build lego
 ARG LEGO_TREEISH=v4.6.0
