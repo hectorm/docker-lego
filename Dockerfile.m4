@@ -19,6 +19,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		file \
+		libcap2-bin \
 		tzdata \
 	&& rm -rf /var/lib/apt/lists/*
 
@@ -30,6 +31,7 @@ RUN git clone "${LEGO_REMOTE:?}" ./
 RUN git checkout "${LEGO_TREEISH:?}"
 RUN git submodule update --init --recursive
 RUN go build -o ./dist/lego -ldflags "-s -w -X main.version=${LEGO_TREEISH:?}" ./cmd/lego/main.go
+RUN setcap cap_net_bind_service=+ep ./dist/lego
 RUN mv ./dist/lego /usr/bin/lego
 RUN file /usr/bin/lego
 RUN /usr/bin/lego --version
@@ -49,7 +51,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends \
 		ca-certificates \
-		libcap2-bin \
 		tzdata \
 	&& rm -rf /var/lib/apt/lists/*
 
@@ -69,11 +70,6 @@ RUN useradd \
 
 # Copy lego build
 COPY --from=build --chown=root:root /usr/bin/lego /usr/bin/lego
-
-# Add capabilities to the lego binary (this allows lego to bind to privileged ports
-# without being root, but creates another layer that increases the image size)
-m4_ifdef([[CROSS_QEMU]], [[RUN setcap cap_net_bind_service=+ep CROSS_QEMU]])
-RUN setcap cap_net_bind_service=+ep /usr/bin/lego
 
 # Create $LEGO_PATH directory (lego will use this directory to store data)
 RUN mkdir -p "${LEGO_PATH:?}" && chown lego:lego "${LEGO_PATH:?}" && chmod 700 "${LEGO_PATH:?}"
