@@ -24,7 +24,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 	&& rm -rf /var/lib/apt/lists/*
 
 # Build lego
-ARG LEGO_TREEISH=v4.13.2
+ARG LEGO_TREEISH=v4.13.3
 ARG LEGO_REMOTE=https://github.com/go-acme/lego.git
 WORKDIR /go/src/lego/
 RUN git clone "${LEGO_REMOTE:?}" ./
